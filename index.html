@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Meet Clone - Pro Edition</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+
+    <!-- JOIN SCREEN -->
+    <div id="joinScreen">
+        <div class="join-box">
+            <h2>Pro Video Meeting</h2>
+            <p>Ready to join?</p>
+            <input type="text" id="nameInput" placeholder="Your Name" autocomplete="off">
+            <input type="text" id="roomInput" placeholder="Meeting Code (e.g. room123)" autocomplete="off">
+            <button id="joinBtn" class="join-btn">Join now</button>
+        </div>
+    </div>
+
+    <!-- MEETING SCREEN -->
+    <div id="meetingScreen">
+        <!-- Top Navigation Header -->
+        <header class="meeting-header">
+            <div class="meeting-title">Google Meet Clone</div>
+            <div class="meeting-info">
+                <span id="hostBadge" class="host-badge" style="display:none;">👑 Host</span>
+                <span id="displayRoomId" class="room-badge">Room Code</span>
+                <div class="meeting-time" id="liveClock">12:00 PM</div>
+            </div>
+        </header>
+
+        <!-- Main Video & Sidebar Layout -->
+        <div class="main-container">
+            <div id="videosContainer">
+                <div class="video-box" id="localVideoContainer">
+                    <video id="localVideo" autoplay muted playsinline></video>
+                    <canvas id="hiddenCanvas" style="display:none;"></canvas>
+                    <div class="name-tag" id="localNameTag">You</div>
+                    <div class="hand-badge" id="localHandBadge">✋</div>
+                </div>
+            </div>
+            
+            <!-- Collapsible Sidebar (Participants & Chat) -->
+            <div class="sidebar" id="sidebarPanel" style="display: none;">
+                <!-- Participants Panel -->
+                <div class="sidebar-section" id="participantsSection">
+                    <div class="sidebar-header">
+                        <h3>Participants</h3>
+                        <span id="participantCount" class="count-badge">1</span>
+                    </div>
+                    <!-- Host Host-Controls Toolbar -->
+                    <div id="hostControlsBar" class="host-controls-bar" style="display:none;">
+                        <button id="hostMuteAllBtn" class="host-action-btn">Mute Everyone</button>
+                    </div>
+                    <ul id="participantsList" class="scroll-area" style="list-style: none;"></ul>
+                </div>
+
+                <!-- Chat Panel -->
+                <div class="sidebar-section" id="chatSection" style="display: none;">
+                    <div class="sidebar-header">
+                        <h3>In-call messages & Files</h3>
+                    </div>
+                    <div id="chatMessages" class="scroll-area"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off">
+                        <label for="fileInput" class="file-upload-btn" title="Share File">
+                            <span class="material-icons">attach_file</span>
+                        </label>
+                        <input type="file" id="fileInput" style="display:none;">
+                        <button id="sendChatBtn"><span class="material-icons">send</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Google Meet Bottom Control Bar -->
+        <div class="controls-bar">
+            <div class="control-group left-group">
+                <button id="recordBtn" class="control-btn" title="Record Meeting">
+                    <span class="material-icons" id="recordIcon">radio_button_checked</span>
+                    <span class="btn-label" id="recordLabel">Record</span>
+                </button>
+                <button id="blurBtn" class="control-btn" title="Toggle Background Blur">
+                    <span class="material-icons">blur_on</span>
+                    <span class="btn-label" id="blurLabel">Blur Off</span>
+                </button>
+            </div>
+
+            <div class="control-group center-group">
+                <button id="muteBtn" class="control-btn" title="Mute/Unmute Microphone">
+                    <span class="material-icons" id="micIcon">mic</span>
+                    <span class="btn-label" id="micLabel">Mute</span>
+                </button>
+                <button id="camBtn" class="control-btn" title="Turn Camera Off/On">
+                    <span class="material-icons" id="camIcon">videocam</span>
+                    <span class="btn-label" id="camLabel">Cam Off</span>
+                </button>
+                <button id="shareScreenBtn" class="control-btn" title="Present Screen">
+                    <span class="material-icons">screen_share</span>
+                    <span class="btn-label" id="screenLabel">Present</span>
+                </button>
+                <button id="raiseHandBtn" class="control-btn" title="Raise or Lower Hand">
+                    <span class="material-icons">back_hand</span>
+                    <span class="btn-label">Raise Hand</span>
+                </button>
+                <button id="leaveBtn" class="control-btn danger" title="Leave Call">
+                    <span class="material-icons">call_end</span>
+                    <span class="btn-label">Leave</span>
+                </button>
+            </div>
+
+            <div class="control-group right-group">
+                <button id="toggleParticipantsBtn" class="icon-toggle-btn" title="Participants List">
+                    <span class="material-icons">people</span>
+                </button>
+                <button id="toggleChatBtn" class="icon-toggle-btn" title="Chat & Files">
+                    <span class="material-icons">chat</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+    <script>
+        setInterval(() => {
+            const d = new Date();
+            document.getElementById('liveClock').textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }, 1000);
+
+        const sidebar = document.getElementById('sidebarPanel');
+        const pSection = document.getElementById('participantsSection');
+        const cSection = document.getElementById('chatSection');
+
+        document.getElementById('toggleParticipantsBtn').addEventListener('click', () => {
+            if (sidebar.style.display === 'flex' && pSection.style.display !== 'none') {
+                sidebar.style.display = 'none';
+            } else {
+                sidebar.style.display = 'flex';
+                pSection.style.display = 'flex';
+                cSection.style.display = 'none';
+            }
+        });
+
+        document.getElementById('toggleChatBtn').addEventListener('click', () => {
+            if (sidebar.style.display === 'flex' && cSection.style.display !== 'none') {
+                sidebar.style.display = 'none';
+            } else {
+                sidebar.style.display = 'flex';
+                cSection.style.display = 'flex';
+                pSection.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
